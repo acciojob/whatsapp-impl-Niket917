@@ -26,4 +26,72 @@ public class WhatsappRepository {
         this.customGroupCount = 0;
         this.messageId = 0;
     }
+
+
+    public String createUser(String name, String mobile) throws Exception {
+        if(userMobile.contains(mobile)){
+            throw new Exception("User already exists");
+        } else {
+            userMobile.add(mobile);
+            return "SUCCESS";
+        }
+    }
+
+    public Group createGroup(List<User> users) {
+        String groupName;
+        if(users.size() == 2){
+            groupName = users.get(1).getName();
+        } else {
+            customGroupCount++;
+            groupName = "Group "+customGroupCount;
+        }
+        Group newGroup = new Group(groupName,users.size());
+        groupUserMap.put(newGroup,users);
+        adminMap.put(newGroup,users.get(0));
+        return newGroup;
+    }
+
+    public int createMessage(String content) {
+        messageId++;
+        return messageId;
+    }
+
+    public int sendMessage(Message message, User sender, Group group)  {
+        if(!groupUserMap.containsKey(group)){
+            throw new RuntimeException("Group does not exist");
+        }
+        List<User> groupMember = groupUserMap.get(group);
+        if(!groupMember.contains(sender)){
+            throw new RuntimeException("You are not allowed to send message");
+        }
+        List<Message> messages = new ArrayList<>();
+        messages.add(message);
+        groupMessageMap.put(group,messages);
+        senderMap.put(message,sender);
+        return messages.size();
+    }
+
+    public String changeAdmin(User approver, User user, Group group) {
+        if(!groupUserMap.containsKey(group)){
+            throw new RuntimeException("Group does not exist");
+        }
+        if(!(adminMap.get(group) != approver)){
+            throw new RuntimeException("Approver does not have rights");
+        }
+        List<User> groupMembers = groupUserMap.get(group);
+        if(!groupMembers.contains(user)){
+            throw new RuntimeException("User is not a participant");
+        }
+        adminMap.put(group,user);
+        return "SUCCESS";
+
+    }
+
+    public int removeUser(User user) {
+        return 0;
+    }
+
+    public String findMessage(Date start, Date end, int k) {
+        return "";
+    }
 }
